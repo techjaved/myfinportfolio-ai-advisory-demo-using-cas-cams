@@ -11,11 +11,12 @@ const __dirname = path.dirname(__filename);
 const app = express()
 
 const port = process.env.PORT || 5005;
-app.use( cors({
-    origin: "http://localhost:5005", // or your actual frontend port
-    methods: ["GET", "POST"],
-    allowedHeaders: ["Content-Type"],
-  }))
+// app.use( cors({
+//     origin: "http://localhost:5005", // or your actual frontend port
+//     methods: ["GET", "POST"],
+//     allowedHeaders: ["Content-Type"],
+//   }))
+app.use(cors());
 app.use(express.json())
 app.use(express.static(path.join(__dirname, "public")));
 
