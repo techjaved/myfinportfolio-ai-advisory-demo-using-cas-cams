@@ -604,7 +604,7 @@
 
       async function callAIAdvisor(portfolioData) {
         try {
-          const response = await fetch("http://localhost:5005/api/advisor", {
+          const response = await fetch("/api/advisor", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
