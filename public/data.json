@@ -1,0 +1,285 @@
+{
+  "userProfile": {
+    "dob": "1990-01-01",
+    "gender": "male",
+    "dependents": 3,
+    "occupation": "Software Developer",
+    "annualIncome": 650000,
+    "taxBracket": "5000-10000",
+    "annualInvestmentCorpus": 452000,
+    "pan": "CYQPM5604L"
+  },
+  "portfolio": {
+    "totalInvestment": 145000,
+    "assets": {
+      "mutualFunds": {
+        "totalAmount": 36250,
+        "percentage": 25,
+        "holdings": [
+          {
+            "name": "Axis Bluechip Fund",
+            "amount": 5000,
+            "investDate": "2023-01-10",
+            "maturityDate": "2026-01-10"
+          },
+          {
+            "name": "HDFC Flexi Cap",
+            "amount": 3000,
+            "investDate": "2024-04-01",
+            "maturityDate": "2026-05-15"
+          }
+        ]
+      },
+      "etfs": {
+        "totalAmount": 21750,
+        "percentage": 15,
+        "holdings": [
+          {
+            "name": "Nippon Gold ETF",
+            "amount": 2000,
+            "investDate": "2024-01-10",
+            "maturityDate": null
+          }
+        ]
+      },
+      "digitalGold": {
+        "totalAmount": 21750,
+        "percentage": 16.7
+      },
+      "fixedDeposits": {
+        "totalAmount": 24167,
+        "percentage": 15,
+        "holdings": [
+          {
+            "name": "ABC",
+            "amount": 4500,
+            "investDate": "2024-02-01",
+            "maturityDate": "2026-09-25"
+          },
+          {
+            "name": "XYZ",
+            "amount": 6980,
+            "investDate": "2025-10-06",
+            "maturityDate": "2025-10-25"
+          }
+        ]
+      },
+      "corporateBonds": {
+        "totalAmount": 24167,
+        "percentage": 16.7,
+        "holdings": [
+          {
+            "name": "LSM",
+            "amount": 48565,
+            "investDate": "2025-01-20",
+            "maturityDate": "2026-06-27"
+          },
+          {
+            "name": "GSM",
+            "amount": 6985,
+            "investDate": "2024-12-31",
+            "maturityDate": "2026-06-24"
+          }
+        ]
+      },
+      "governmentSecurities": {
+        "totalAmount": 17916,
+        "percentage": 12.3,
+        "holdings": [
+          {
+            "name": "Sukanya",
+            "amount": 6985,
+            "investDate": "2025-05-06",
+            "maturityDate": "2026-02-18"
+          },
+          {
+            "name": "Atal Pension",
+            "amount": 4586,
+            "investDate": "2025-06-18",
+            "maturityDate": "2030-08-30"
+          }
+        ]
+      }
+    }
+  },
+  "advisorAnalysis": {
+    "idealPortfolio": {
+      "mutualFunds": 25,
+      "etfs": 15,
+      "digitalGold": 16.7,
+      "fixedDeposits": 15,
+      "corporateBonds": 16.7,
+      "governmentSecurities": 12.3
+    },
+    "rebalancingRecommendations": [
+      {
+        "asset": "Fixed Deposits",
+        "action": "Remove",
+        "differencePercent": -20,
+        "differenceAmount": -10000
+      },
+      {
+        "asset": "Corporate Bonds",
+        "action": "Add",
+        "differencePercent": 30,
+        "differenceAmount": 15000
+      },
+      {
+        "asset": "Government Securities",
+        "action": "Remove",
+        "differencePercent": -10,
+        "differenceAmount": -5000
+      },
+      {
+        "asset": "Digital Gold",
+        "action": "Remove",
+        "differencePercent": -20,
+        "differenceAmount": -10000
+      },
+      {
+        "asset": "Mutual Funds",
+        "action": "Add",
+        "differencePercent": 20,
+        "differenceAmount": 10000
+      },
+      {
+        "asset": "ETFs",
+        "action": "Remove",
+        "differencePercent": -20,
+        "differenceAmount": -10000
+      }
+    ],
+    "potentialROI": {
+      "estimatedReturn": "15% p.a",
+      "riskLevel": "Moderate",
+      "note": "Investments are subject to market risks. Please read all documents before investing."
+    }
+  },
+  "buySellRecommendations": [
+    {
+      "asset": "Mutual Funds",
+      "buy": [
+        {
+          "fundName": "HDFC Flexi Cap Fund",
+          "amount": 10000,
+          "reason": "Increase exposure to equity diversified fund with strong returns.",
+          "platforms": [
+            {
+              "platformName": "Groww",
+              "commission": "0%",
+              "userRating": 4.6
+            },
+            {
+              "platformName": "Kuvera",
+              "commission": "0%",
+              "userRating": 4.4
+            }
+          ]
+        },
+        {
+          "fundName": "ICICI Bluechip Fund",
+          "amount": 5000,
+          "reason": "Enhance large-cap allocation for stable growth.",
+          "platforms": [
+            {
+              "platformName": "Zerodha Coin",
+              "commission": "0.1%",
+              "userRating": 4.7
+            }
+          ]
+        }
+      ],
+      "sell": [
+        {
+          "fundName": "Axis Bluechip Fund",
+          "amount": 5000,
+          "reason": "Rebalance due to overlapping holdings.",
+          "platforms": [
+            {
+              "platformName": "Groww",
+              "commission": "0%",
+              "userRating": 4.6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "asset": "Corporate Bonds",
+      "buy": [
+        {
+          "fundName": "XYZ Corporate Bond Fund",
+          "amount": 15000,
+          "reason": "High credit rating and stable yield.",
+          "platforms": [
+            {
+              "platformName": "HDFC Securities",
+              "commission": "0.25%",
+              "userRating": 4.3
+            },
+            {
+              "platformName": "ICICI Direct",
+              "commission": "0.3%",
+              "userRating": 4.5
+            }
+          ]
+        }
+      ],
+      "sell": [
+        {
+          "fundName": "LSM Bond",
+          "amount": 5000,
+          "reason": "Reduce long-duration exposure.",
+          "platforms": [
+            {
+              "platformName": "Upstox",
+              "commission": "0.15%",
+              "userRating": 4.2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "asset": "Digital Gold",
+      "buy": [],
+      "sell": [
+        {
+          "fundName": "Digital Gold Holding",
+          "amount": 10000,
+          "reason": "Reduce gold exposure for better portfolio balance.",
+          "platforms": [
+            {
+              "platformName": "PhonePe Gold",
+              "commission": "1%",
+              "userRating": 4.1
+            },
+            {
+              "platformName": "Paytm Gold",
+              "commission": "1.5%",
+              "userRating": 4.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "asset": "Government Securities",
+      "buy": [],
+      "sell": [
+        {
+          "fundName": "Atal Pension",
+          "amount": 5000,
+          "reason": "Shift from low-yield to moderate-risk fixed income options.",
+          "platforms": [
+            {
+              "platformName": "RBI Direct",
+              "commission": "0%",
+              "userRating": 4.8
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

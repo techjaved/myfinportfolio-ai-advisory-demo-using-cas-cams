@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Advisor Dashboard</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: #f7f9fc;
+      margin: 0;
+      padding: 0;
+      color: #222;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      font-size: 20px;
+      margin: 0;
+      color: #333;
+    }
+
+    main {
+      padding: 24px;
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+      display: none;
+    }
+
+    .card.active {
+      display: block;
+    }
+
+    h2 {
+      font-size: 18px;
+      margin-bottom: 12px;
+      color: #222;
+    }
+
+    h3 {
+      font-size: 16px;
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    canvas {
+      display: block;
+      max-width: 400px;
+      margin: 20px auto;
+    }
+
+    .allocation-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .allocation-list li {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .allocation-list li:last-child {
+      border-bottom: none;
+    }
+
+    .chart-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .chart-tab {
+      background: #e8eafc;
+      border: none;
+      border-radius: 20px;
+      padding: 6px 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .chart-tab.active {
+      background: #4f46e5;
+      color: white;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+    }
+
+    th {
+      background: #f0f3ff;
+      color: #333;
+    }
+
+    .recommendation {
+      font-weight: bold;
+    }
+
+    .buy { color: green; }
+    .hold { color: #0070f3; }
+    .reduce, .sell { color: red; }
+
+    .note {
+      font-size: 12px;
+      color: #666;
+      text-align: center;
+      margin-top: 12px;
+    }
+
+    .roi-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 20px 0;
+      padding: 16px;
+      background: #f0fdf4;
+      border-radius: 8px;
+      border-left: 4px solid #22c55e;
+    }
+
+    .roi-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #16a34a;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: #4f46e5;
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #6b7280;
+      color: white;
+    }
+
+    .fund-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .fund-tab {
+      padding: 8px 16px;
+      border: 1px solid #d1d5db;
+      background: #f9fafb;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .fund-tab.active {
+      background: #4f46e5;
+      color: white;
+      border-color: #4f46e5;
+    }
+
+    .back-btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #6b7280;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .next-btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #10b981;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .total-investment {
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      color: #4f46e5;
+      margin: 10px 0;
+    }
+
+    #overviewCard, #refinementCard {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Advisor: AI Investment Insights</h1>
+  </header>
+
+  <main>
+    <div class="card active" id="overviewCard">
+      <h2>Portfolio Overview</h2>
+      <div class="total-investment">₹<span id="totalInvestment">49,000</span></div>
+
+      <div class="chart-tabs">
+        <button class="chart-tab active" id="currentTab">Current Allocation</button>
+        <button class="chart-tab" id="recommendedTab">Recommended Allocation</button>
+      </div>
+
+      <canvas id="allocationChart"></canvas>
+
+      <!-- Current Allocation -->
+      <div id="currentSection">
+        <h3>Current Allocation Details</h3>
+        <ul class="allocation-list" id="currentList"></ul>
+      </div>
+
+      <!-- Recommended Allocation -->
+      <div id="recommendedSection" class="hidden">
+        <h3>Recommended Allocation Details</h3>
+        <ul class="allocation-list" id="recommendedList"></ul>
+      </div>
+
+      <p class="note">
+        *Investments are subject to market risks. Please read all documents carefully before investing.
+      </p>
+    </div>
+
+    <div class="card" id="refinementCard">
+      <h2>Portfolio Refinement Recommendations</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Asset Name</th>
+            <th>Difference</th>
+            <th>Recommendation</th>
+          </tr>
+        </thead>
+        <tbody id="refinementBody"></tbody>
+      </table>
+
+      <div class="roi-section">
+        <div>
+          <h3>Potential ROI upto</h3>
+        </div>
+        <div class="roi-value">15% p.a.</div>
+      </div>
+
+      <div class="buttons">
+        <button class="btn btn-primary">Re-Balance Portfolio</button>
+        <button class="btn btn-secondary">Download Excel</button>
+      </div>
+    </div>
+
+    <div class="card" id="mutualFundsCard">
+      <h2>Mutual Funds</h2>
+      <div class="fund-tabs">
+        <button class="fund-tab active" id="buyTab">Buy</button>
+        <button class="fund-tab" id="sellTab">Sell</button>
+      </div>
+
+      <!-- Buy Tab -->
+      <div id="buySection">
+        <table>
+          <thead>
+            <tr>
+              <th>Name of Funds</th>
+              <th>Expense Ratio</th>
+              <th>CAGR 1 Year</th>
+              <th>Liquidity</th>
+              <th>Volatility</th>
+              <th>Explore</th>
+            </tr>
+          </thead>
+          <tbody id="buyTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Sell Tab -->
+      <div id="sellSection" class="hidden">
+        <table>
+          <thead>
+            <tr>
+              <th>Name of Funds</th>
+              <th>Expense Ratio</th>
+              <th>CAGR 1 Year</th>
+              <th>Liquidity</th>
+              <th>Volatility</th>
+              <th>Explore</th>
+            </tr>
+          </thead>
+          <tbody id="sellTableBody"></tbody>
+        </table>
+      </div>
+
+      <button class="back-btn" id="backToRefinement">Back to Recommendations</button>
+      <button class="next-btn" id="viewProfileRecs">View Profile-Based Recommendations</button>
+    </div>
+
+    <div class="card" id="topRecsCard">
+      <h2>Top recommendations based on your profile</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Name of Funds</th>
+            <th>Platform Name</th>
+            <th>Commission Charge</th>
+            <th>User Rating</th>
+          </tr>
+        </thead>
+        <tbody id="topRecsBody"></tbody>
+      </table>
+
+      <button class="back-btn" id="backToMutual">Back to Mutual Funds</button>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const inputData = {
+      "profileDetails": {
+        "dob": "1990-01-01",
+        "gender": "male",
+        "noOfDependents": "5",
+        "occupation": "Software Devloper",
+        "annualIncome": "450000",
+        "taxBracket": "5000-10000",
+        "exactAnnualInvestmentIncomeCorpus": "350000",
+        "pan": "CYQPM5604L"
+      },
+      "stocks": {
+        "totalAmount": "24000"
+      },
+      "digitalGold": {
+        "totalAmount": "5000"
+      },
+      "realEstate": {
+        "totalAmount": 0
+      },
+      "others": {
+        "totalAmount": 0
+      },
+      "mutualFunds": [
+        {
+          "name": "Axis Bluechip Fund",
+          "amount": "5000",
+          "investDate": "2023-01-10",
+          "maturityDate": "2026-01-10"
+        },
+        {
+          "name": "HDFC Flexi Cap",
+          "amount": "3000",
+          "investDate": "2024-04-01",
+          "maturityDate": null
+        },
+        {
+          "name": "Axis Bluechip Fund",
+          "amount": "5000",
+          "investDate": "2023-01-10",
+          "maturityDate": "2026-01-10"
+        },
+        {
+          "name": "HDFC Flexi Cap",
+          "amount": "3000",
+          "investDate": "2024-04-01",
+          "maturityDate": null
+        }
+      ],
+      "etfs": [
+        {
+          "name": "Nippon Gold ETF",
+          "amount": "2000",
+          "investDate": "2024-01-10",
+          "maturityDate": null
+        },
+        {
+          "name": "Nippon Gold ETF",
+          "amount": "2000",
+          "investDate": "2024-01-10",
+          "maturityDate": null
+        }
+      ],
+      "fixedDeposits": [],
+      "corporateBonds": [],
+      "governmentSecurities": []
+    };
+
+    // Compute total investment
+    const stocksAmount = parseInt(inputData.stocks.totalAmount) || 0;
+    const digitalGoldAmount = parseInt(inputData.digitalGold.totalAmount) || 0;
+    const mutualFundsTotal = inputData.mutualFunds.reduce((sum, f) => sum + (parseInt(f.amount) || 0), 0);
+    const etfsTotal = inputData.etfs.reduce((sum, f) => sum + (parseInt(f.amount) || 0), 0);
+    const fixedDepositsTotal = inputData.fixedDeposits.reduce((sum, f) => sum + (parseInt(f.amount) || 0), 0);
+    const corporateBondsTotal = inputData.corporateBonds.reduce((sum, f) => sum + (parseInt(f.amount) || 0), 0);
+    const governmentSecuritiesTotal = inputData.governmentSecurities.reduce((sum, f) => sum + (parseInt(f.amount) || 0), 0);
+
+    const totalInvestment = stocksAmount + digitalGoldAmount + mutualFundsTotal + etfsTotal + fixedDepositsTotal + corporateBondsTotal + governmentSecuritiesTotal;
+
+    // Current allocation
+    const currentAllocation = [
+      { asset_type: "Stocks", amount: stocksAmount, percentage: ((stocksAmount / totalInvestment) * 100).toFixed(2) },
+      { asset_type: "Mutual Funds", amount: mutualFundsTotal, percentage: ((mutualFundsTotal / totalInvestment) * 100).toFixed(2) },
+      { asset_type: "ETFs", amount: etfsTotal, percentage: ((etfsTotal / totalInvestment) * 100).toFixed(2) },
+      { asset_type: "Digital Gold", amount: digitalGoldAmount, percentage: ((digitalGoldAmount / totalInvestment) * 100).toFixed(2) },
+      { asset_type: "Fixed Deposits", amount: fixedDepositsTotal, percentage: ((fixedDepositsTotal / totalInvestment) * 100).toFixed(2) },
+      { asset_type: "Corporate Bonds", amount: corporateBondsTotal, percentage: ((corporateBondsTotal / totalInvestment) * 100).toFixed(2) },
+      { asset_type: "Government Securities", amount: governmentSecuritiesTotal, percentage: ((governmentSecuritiesTotal / totalInvestment) * 100).toFixed(2) }
+    ];
+
+    // Recommended allocation based on profile (35 yo, moderate risk, 5 dependents)
+    const recommendedAllocation = [
+      { asset_type: "Stocks", recommended_percentage: 20 },
+      { asset_type: "Mutual Funds", recommended_percentage: 25 },
+      { asset_type: "ETFs", recommended_percentage: 10 },
+      { asset_type: "Digital Gold", recommended_percentage: 10 },
+      { asset_type: "Fixed Deposits", recommended_percentage: 15 },
+      { asset_type: "Corporate Bonds", recommended_percentage: 10 },
+      { asset_type: "Government Securities", recommended_percentage: 10 }
+    ];
+
+    // Advisory with differences
+    const advisory = currentAllocation.map((curr, i) => {
+      const rec = recommendedAllocation[i].recommended_percentage;
+      const diffPerc = parseFloat(curr.percentage) - rec;
+      let action, diffStr;
+      if (diffPerc > 0) {
+        action = "Remove";
+        const diffAmount = Math.round((diffPerc / 100) * totalInvestment);
+        diffStr = `Remove ${diffPerc.toFixed(1)}% (₹${diffAmount.toLocaleString()})`;
+      } else if (diffPerc < 0) {
+        action = "Add";
+        const diffAmount = Math.round((Math.abs(diffPerc) / 100) * totalInvestment);
+        diffStr = `Add ${Math.abs(diffPerc).toFixed(1)}% (₹${diffAmount.toLocaleString()})`;
+      } else {
+        action = "Hold";
+        diffStr = `Hold 0.0% (₹0)`;
+      }
+      return {
+        asset_name: curr.asset_type,
+        difference: diffStr,
+        recommendation: action,
+        confidence_score: 0.8
+      };
+    });
+
+    // Mutual funds buy suggestions
+    const mutualFundsBuy = [
+      { name: "Parag Parikh Flexi Cap", expense_ratio: "0.62%", cagr: "18%", liquidity: "High", volatility: "Medium" },
+      { name: "HDFC Flexi Cap", expense_ratio: "1.0%", cagr: "15%", liquidity: "High", volatility: "High" },
+      { name: "Mirae Asset Large Cap", expense_ratio: "0.55%", cagr: "14%", liquidity: "High", volatility: "Low" }
+    ];
+
+    // Mutual funds sell from input data (unique)
+    const uniqueSellFunds = [...new Set(inputData.mutualFunds.map(f => f.name))].map(name => ({
+      name,
+      expense_ratio: "1.0%", // approximate
+      cagr: "12%",
+      liquidity: "High",
+      volatility: "High"
+    }));
+
+    // Top recommendations
+    const topRecommendations = [
+      { name: "Parag Parikh Flexi Cap", platform: "Groww", commission: "Low", rating: 4.5 },
+      { name: "HDFC Flexi Cap", platform: "Zerodha Coin", commission: "Low", rating: 4.5 }
+    ];
+
+    document.getElementById('totalInvestment').textContent = totalInvestment.toLocaleString();
+
+    const ctx = document.getElementById("allocationChart");
+    const labels = currentAllocation.map(a => a.asset_type);
+    let chart;
+
+    function renderChart(type) {
+      const data = type === "current"
+        ? currentAllocation.map(a => a.amount)
+        : recommendedAllocation.map(a => a.recommended_percentage);
+      const title = type === "current"
+        ? "Current Portfolio Allocation"
+        : "Recommended Portfolio Allocation";
+
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: "doughnut",
+        data: {
+          labels,
+          datasets: [{
+            data,
+            backgroundColor: ["#ef4444", "#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#06b6d4", "#ec4899"],
+          }],
+        },
+        options: {
+          plugins: {
+            title: { display: true, text: title },
+            legend: { position: "bottom" },
+          },
+        },
+      });
+    }
+
+    // Populate Current Allocation
+    const currentList = document.getElementById("currentList");
+    currentAllocation.forEach(item => {
+      const li = document.createElement("li");
+      li.innerHTML = `<span>${item.asset_type}</span><span>₹${item.amount.toLocaleString()} (${item.percentage}%)</span>`;
+      currentList.appendChild(li);
+    });
+
+    // Populate Recommended Allocation
+    const recommendedList = document.getElementById("recommendedList");
+    recommendedAllocation.forEach(row => {
+      const li = document.createElement("li");
+      li.innerHTML = `<span>${row.asset_type}</span><span>${row.recommended_percentage}%</span>`;
+      recommendedList.appendChild(li);
+    });
+
+    // Populate Refinement Body
+    const refinementBody = document.getElementById("refinementBody");
+    advisory.forEach((item, index) => {
+      const tr = document.createElement("tr");
+      const btn = document.createElement("button");
+      btn.className = "btn btn-secondary";
+      btn.textContent = "Click here";
+      btn.dataset.asset = item.asset_name.toLowerCase().replace(/\s+/g, '');
+      btn.addEventListener('click', (e) => {
+        if (item.asset_name === "Mutual Funds") {
+          showSection('mutualFundsCard');
+        } else {
+          alert(`Recommendations for ${item.asset_name} coming soon.`);
+        }
+      });
+      tr.innerHTML = `<td>${item.asset_name}</td><td>${item.difference}</td><td></td>`;
+      tr.querySelector('td:last-child').appendChild(btn);
+      refinementBody.appendChild(tr);
+    });
+
+    // Initial chart
+    renderChart("current");
+
+    // Tab handlers for Portfolio Overview
+    document.getElementById("currentTab").addEventListener("click", () => {
+      document.getElementById("currentTab").classList.add("active");
+      document.getElementById("recommendedTab").classList.remove("active");
+      document.getElementById("currentSection").classList.remove("hidden");
+      document.getElementById("recommendedSection").classList.add("hidden");
+      renderChart("current");
+    });
+
+    document.getElementById("recommendedTab").addEventListener("click", () => {
+      document.getElementById("recommendedTab").classList.add("active");
+      document.getElementById("currentTab").classList.remove("active");
+      document.getElementById("recommendedSection").classList.remove("hidden");
+      document.getElementById("currentSection").classList.add("hidden");
+      renderChart("recommended");
+    });
+
+    // Mutual Funds Buy Table
+    const buyTableBody = document.getElementById("buyTableBody");
+    mutualFundsBuy.forEach(fund => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${fund.name}</td>
+        <td>${fund.expense_ratio}</td>
+        <td>${fund.cagr}</td>
+        <td>${fund.liquidity}</td>
+        <td>${fund.volatility}</td>
+        <td><button class="btn btn-secondary">Click</button></td>
+      `;
+      buyTableBody.appendChild(tr);
+    });
+
+    // Mutual Funds Sell Table
+    const sellTableBody = document.getElementById("sellTableBody");
+    uniqueSellFunds.forEach(fund => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${fund.name}</td>
+        <td>${fund.expense_ratio}</td>
+        <td>${fund.cagr}</td>
+        <td>${fund.liquidity}</td>
+        <td>${fund.volatility}</td>
+        <td><button class="btn btn-secondary">Click</button></td>
+      `;
+      sellTableBody.appendChild(tr);
+    });
+
+    // Mutual Funds Tabs
+    document.getElementById("buyTab").addEventListener("click", () => {
+      document.getElementById("buyTab").classList.add("active");
+      document.getElementById("sellTab").classList.remove("active");
+      document.getElementById("buySection").classList.remove("hidden");
+      document.getElementById("sellSection").classList.add("hidden");
+    });
+
+    document.getElementById("sellTab").addEventListener("click", () => {
+      document.getElementById("sellTab").classList.add("active");
+      document.getElementById("buyTab").classList.remove("active");
+      document.getElementById("sellSection").classList.remove("hidden");
+      document.getElementById("buySection").classList.add("hidden");
+    });
+
+    // Top Recs Table
+    const topRecsBody = document.getElementById("topRecsBody");
+    topRecommendations.forEach(rec => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${rec.name}</td>
+        <td>${rec.platform}</td>
+        <td>${rec.commission}</td>
+        <td>${rec.rating}</td>
+      `;
+      topRecsBody.appendChild(tr);
+    });
+
+    // Navigation functions
+    function showSection(sectionId) {
+      // Hide all cards
+      document.querySelectorAll('.card').forEach(card => card.classList.remove('active'));
+      // Show selected
+      document.getElementById(sectionId).classList.add('active');
+    }
+
+    // Back to refinement
+    document.getElementById("backToRefinement").addEventListener('click', () => showSection('refinementCard'));
+
+    // View profile recs
+    document.getElementById("viewProfileRecs").addEventListener('click', () => showSection('topRecsCard'));
+
+    // Back to mutual
+    document.getElementById("backToMutual").addEventListener('click', () => showSection('mutualFundsCard'));
+  </script>
+</body>
+</html>

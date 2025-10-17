@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portfolio Advisor (AI) - Dynamic</title>
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+      /* (Your original CSS — unchanged except a couple utility classes for hidden canvas) */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: #f5f7fa;
+        color: #1a1a1a;
+      }
+      .container {
+        max-width: 430px;
+        margin: 0 auto;
+        background: white;
+        min-height: 100vh;
+      }
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px;
+        border-bottom: 1px solid #e8e8e8;
+      }
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .back-btn {
+        font-size: 20px;
+        cursor: pointer;
+        color: #333;
+      }
+      .header-title {
+        font-size: 16px;
+        font-weight: 600;
+      }
+      .cube-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+      }
+      .tabs {
+        display: flex;
+        gap: 10px;
+        padding: 20px;
+        justify-content: center;
+      }
+      .tab {
+        padding: 10px 24px;
+        border-radius: 20px;
+        border: 2px solid transparent;
+        background: #f5f5f5;
+        cursor: pointer;
+        font-size: 14px;
+        color: #666;
+        transition: all 0.3s;
+      }
+      .tab.active {
+        background: white;
+        border-color: #7c5cdb;
+        color: #7c5cdb;
+        font-weight: 500;
+      }
+      .content {
+        padding: 20px;
+      }
+      .main-heading {
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1.3;
+        margin-bottom: 20px;
+        color: #1a1a1a;
+      }
+      .dropdown {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        background: white;
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 20px;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        cursor: pointer;
+      }
+      .portfolio-card {
+        background: #f8f9fc;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+      }
+      .card-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: #1a1a1a;
+      }
+      .chart-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 24px;
+        position: relative;
+      }
+      .donut-chart {
+        width: 200px;
+        height: 200px;
+        margin-bottom: 16px;
+      }
+      .total-investment {
+        text-align: center;
+      }
+      .amount {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1a1a1a;
+      }
+      .amount-label {
+        font-size: 13px;
+        color: #888;
+        margin-top: 4px;
+      }
+      .asset-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .asset-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+      }
+      .asset-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .asset-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+      .asset-name {
+        font-size: 14px;
+        color: #333;
+      }
+      .asset-value {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+      }
+      .asset-amount {
+        font-weight: 600;
+        color: #1a1a1a;
+      }
+      .asset-percent {
+        color: #888;
+        font-size: 13px;
+      }
+      .disclaimer {
+        font-size: 11px;
+        color: #999;
+        font-style: italic;
+        margin-top: 16px;
+        line-height: 1.4;
+      }
+      .action-btn {
+        width: 100%;
+        padding: 16px;
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #7c5cdb 0%, #9575de 100%);
+        color: white;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 20px;
+        transition: transform 0.2s;
+      }
+      .action-btn:hover {
+        transform: translateY(-2px);
+      }
+      .action-btn.outline {
+        background: white;
+        border: 2px solid #7c5cdb;
+        color: #7c5cdb;
+      }
+      .recommendation-table {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-top: 20px;
+      }
+      .table-header {
+        display: grid;
+        grid-template-columns: 1.5fr 1.2fr 1.3fr;
+        background: #e8f5e9;
+        padding: 12px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #333;
+      }
+      .table-row {
+        display: grid;
+        grid-template-columns: 1.5fr 1.2fr 1.3fr;
+        padding: 16px;
+        border-bottom: 1px solid #f0f0f0;
+        align-items: center;
+      }
+      .table-row:last-child {
+        border-bottom: none;
+      }
+      .asset-cell {
+        font-size: 14px;
+        color: #333;
+      }
+      .difference-cell {
+        font-size: 13px;
+        color: #333;
+      }
+      .diff-percent {
+        font-weight: 600;
+      }
+      .diff-amount {
+        color: #666;
+        font-size: 12px;
+      }
+      .recommendation-cell a {
+        color: #7c5cdb;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 500;
+      }
+      .roi-card {
+        background: linear-gradient(135deg, #d4f1f4 0%, #a8e6cf 100%);
+        border-radius: 16px;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 20px 0;
+      }
+      .roi-label {
+        font-size: 20px;
+        font-weight: 600;
+        color: #1a1a1a;
+      }
+      .roi-value {
+        background: #05a660;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-size: 24px;
+        font-weight: 700;
+      }
+      .roi-subtext {
+        font-size: 12px;
+        margin-top: 4px;
+      }
+      .action-buttons {
+        display: flex;
+        gap: 12px;
+        margin-top: 30px;
+      }
+      .buy-sell-tabs {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+      .buy-sell-tab {
+        flex: 1;
+        padding: 12px;
+        border: 2px solid #7c5cdb;
+        border-radius: 8px;
+        background: white;
+        color: #7c5cdb;
+        text-align: center;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s;
+      }
+      .buy-sell-tab.active {
+        background: #7c5cdb;
+        color: white;
+      }
+      .funds-table {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .funds-table-header {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr;
+        background: #e8f5e9;
+        padding: 12px 16px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #333;
+        gap: 8px;
+      }
+      .funds-table-row {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr;
+        padding: 16px;
+        border-bottom: 1px solid #f0f0f0;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+      }
+      .funds-table-row:last-child {
+        border-bottom: none;
+      }
+      .explore-link {
+        color: #7c5cdb;
+        text-decoration: none;
+        font-weight: 500;
+      }
+      .platform-table {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-top: 20px;
+      }
+      .platform-header {
+        display: grid;
+        grid-template-columns: 1.5fr 1.2fr 1fr 0.8fr;
+        background: #e8f5e9;
+        padding: 12px 16px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #333;
+      }
+      .platform-row {
+        display: grid;
+        grid-template-columns: 1.5fr 1.2fr 1fr 0.8fr;
+        padding: 16px;
+        border-bottom: 1px solid #f0f0f0;
+        align-items: center;
+        font-size: 13px;
+      }
+      .platform-row:last-child {
+        border-bottom: none;
+      }
+      .platform-link {
+        color: #7c5cdb;
+        text-decoration: none;
+        font-weight: 500;
+      }
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+      }
+      .subtitle {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 20px;
+      }
+      svg {
+        transform: rotate(-90deg);
+      }
+      /* small utilities */
+      .hidden {
+        display: none !important;
+      }
+      .center {
+        text-align: center;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <!-- Page 1: Current Portfolio -->
+      <div id="page1" class="page active">
+        <!-- <div class="header">
+          <div class="header-left">
+            <span class="back-btn" onclick="goBack()">‹</span>
+            <span class="header-title">Advisor: Advisor (AI)</span>
+          </div>
+          <div class="cube-icon">📦</div>
+        </div> -->
+
+        <!-- <div class="tabs">
+          <div class="tab">Details</div>
+          <div class="tab active">Advisor(AI)</div>
+          <div class="tab">Tracker</div>
+        </div> -->
+
+        <div class="content">
+          <h1 class="main-heading">
+            Here is what you can do to refine your portfolio
+          </h1>
+
+          <select
+            class="dropdown"
+            id="portfolioSelect"
+            onchange="changeView(this.value)"
+          >
+            <option value="current">Your Portfolio</option>
+            <option value="recommended">Recommended Portfolio</option>
+          </select>
+
+          <div class="portfolio-card">
+            <h2 class="card-title">Current Portfolio Allocation</h2>
+
+            <div class="chart-container">
+              <!-- keep the original SVG visually but hide it and use canvas for Chart.js -->
+              <svg
+                id="staticDonut"
+                class="donut-chart"
+                viewBox="0 0 200 200"
+              ></svg>
+              <canvas id="currentChart" class="donut-chart"></canvas>
+
+              <div class="total-investment">
+                <div class="amount" id="totalInvestment">₹ 0</div>
+                <div class="amount-label">Total Investment</div>
+              </div>
+            </div>
+
+            <div class="asset-list" id="assetList">
+              <!-- dynamically populated -->
+            </div>
+
+            <p class="disclaimer" id="disclaimer">
+              *Investments are subject to market risks. Please read all
+              documents before investing.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Page 2: Ideal Portfolio -->
+      <div id="page2" class="page">
+        <!-- <div class="header">
+          <div class="header-left">
+            <span class="back-btn" onclick="goBack()">‹</span>
+            <span class="header-title">Advisor: Advisor (AI)</span>
+          </div>
+          <div class="cube-icon">📦</div>
+        </div> -->
+
+        <!-- <div class="tabs">
+          <div class="tab">Details</div>
+          <div class="tab active">Advisor(AI)</div>
+          <div class="tab">Tracker</div>
+        </div> -->
+
+        <div class="content">
+          <h1 class="main-heading">
+            Here is what you can do to refine your portfolio
+          </h1>
+
+          <select class="dropdown" id="recommendedSelect">
+            <option>Recommended Portfolio</option>
+          </select>
+
+          <div class="portfolio-card">
+            <h2 class="card-title">Ideal Portfolio Allocation</h2>
+
+            <div class="chart-container">
+              <svg
+                id="staticDonutRecommended"
+                class="donut-chart"
+                viewBox="0 0 200 200"
+              ></svg>
+              <canvas id="recommendedChart" class="donut-chart"></canvas>
+
+              <div class="total-investment">
+                <div class="amount" id="recommendedTotal">₹ 0</div>
+                <div class="amount-label">Total Investment</div>
+              </div>
+            </div>
+
+            <div class="asset-list" id="recommendedAssetList">
+              <!-- populated by JS -->
+            </div>
+          </div>
+
+          <button class="action-btn" onclick="showPage('page3')">
+            View recommendation
+          </button>
+        </div>
+      </div>
+
+      <!-- Page 3: Recommendations -->
+      <div id="page3" class="page">
+        <!-- <div class="header">
+          <div class="header-left">
+            <span class="back-btn" onclick="showPage('page2')">‹</span>
+            <span class="header-title">Advisor: Advisor (AI)</span>
+          </div>
+          <div class="cube-icon">📦</div>
+        </div> -->
+
+        <div class="content">
+          <h1 class="main-heading">Advisor (AI)</h1>
+          <p class="subtitle">
+            For each asset class, explore the customized recommendations
+          </p>
+
+          <div class="recommendation-table" id="recommendationTable">
+            <div class="table-header">
+              <div>Asset Name</div>
+              <div>Difference</div>
+              <div>Recommendation</div>
+            </div>
+            <!-- rows appended by JS -->
+          </div>
+
+          <div class="roi-card" id="roiCard">
+            <div>
+              <div class="roi-label">Potential ROI upto</div>
+            </div>
+            <div>
+              <div class="roi-value" id="roiValue">0%</div>
+              <div
+                class="roi-subtext"
+                style="text-align: center; color: #05a660"
+              >
+                p.a
+              </div>
+            </div>
+          </div>
+
+          <div class="action-buttons">
+            <button
+              class="action-btn outline"
+              style="flex: 1"
+              onclick="showPage('page1')"
+            >
+              Re-Balance Portfolio
+            </button>
+            <button class="action-btn" style="flex: 1" id="downloadExcelBtn">
+              Download Excel
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Page 4: Buy Recommendations -->
+      <div id="page4" class="page">
+        <div class="header">
+          <!-- <div class="header-left">
+            <span class="back-btn" onclick="showPage('page3')">‹</span>
+            <span class="header-title">Advisor: (Advisor AI)</span>
+          </div> -->
+        </div>
+
+        <div style="padding: 0 20px; margin-top: 10px">
+          <p style="color: #666; font-size: 14px" id="buyAssetTitle">
+            Mutual Funds
+          </p>
+        </div>
+
+        <div class="content">
+          <div class="buy-sell-tabs">
+            <div
+              class="buy-sell-tab active"
+              id="buyTab"
+              onclick="switchBuySell('buy')"
+            >
+              Buy
+            </div>
+            <div
+              class="buy-sell-tab"
+              id="sellTab"
+              onclick="switchBuySell('sell')"
+            >
+              Sell
+            </div>
+          </div>
+
+          <div class="funds-table" id="fundsTable">
+            <div class="funds-table-header">
+              <div>Name of Funds</div>
+              <div>Expense Ratio</div>
+              <div>CAGR 1 Year</div>
+              <div>Liquidity</div>
+              <div>Volatility</div>
+              <div>Explore</div>
+            </div>
+            <!-- rows inserted dynamically -->
+          </div>
+
+          <button class="action-btn" onclick="showPage('page3')">
+            Back to Recommendation page
+          </button>
+        </div>
+      </div>
+
+      <!-- Page 5: Sell Recommendations -->
+      <div id="page5" class="page">
+        <div class="header">
+          <!-- <div class="header-left">
+            <span class="back-btn" onclick="showPage('page4')">‹</span>
+            <span class="header-title">Advisor: (Advisor AI)</span>
+          </div> -->
+        </div>
+
+        <div style="padding: 0 20px; margin-top: 10px">
+          <p style="color: #666; font-size: 14px" id="sellAssetTitle">
+            Mutual Funds
+          </p>
+        </div>
+
+        <div class="content">
+          <div class="buy-sell-tabs">
+            <div class="buy-sell-tab" onclick="showPage('page4')">Buy</div>
+            <div class="buy-sell-tab active">Sell</div>
+          </div>
+
+          <div class="funds-table" id="fundsTableSell">
+            <div class="funds-table-header">
+              <div>Name of Funds</div>
+              <div>Expense Ratio</div>
+              <div>CAGR 1 Year</div>
+              <div>Liquidity</div>
+              <div>Volatility</div>
+              <div>Explore</div>
+            </div>
+            <!-- rows inserted dynamically -->
+          </div>
+
+          <button class="action-btn" onclick="showPage('page3')">
+            Back to Recommendation page
+          </button>
+        </div>
+      </div>
+
+      <!-- Page 6: Platform Recommendations -->
+      <div id="page6" class="page">
+        <div class="header">
+          <!-- <div class="header-left">
+            <span class="back-btn" onclick="showPage('page4')">‹</span>
+            <span class="header-title">Advisor: (Advisor AI)</span>
+          </div> -->
+        </div>
+
+        <div class="content">
+          <p class="subtitle">Top recommendations based on your profile</p>
+
+          <div class="platform-table" id="platformTable">
+            <div class="platform-header">
+              <div>Name of Funds</div>
+              <div>Platform Name</div>
+              <div>Commission Charge</div>
+              <div>User Rating</div>
+            </div>
+            <!-- rows inserted dynamically -->
+          </div>
+
+          <button class="action-btn" onclick="showPage('page3')">
+            Back to Recommendation page
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Colors matched to original design
+      const COLORS = [
+        "#60d5f8",
+        "#5fcfa8",
+        "#b0b0b0",
+        "#0e7c93",
+        "#5a5a9e",
+        "#90e9d8",
+      ];
+
+      let dataJSON = null;
+      let currentChart = null;
+      let recommendedChart = null;
+      let currentTab = "current";
+
+      // Fetch and render
+      document.addEventListener("DOMContentLoaded", async () => {
+        try {
+        //   const res = await fetch("./data.json");
+        //   dataJSON = await res.json();
+        dataJSON = JSON.parse(localStorage.getItem("advisorResponse"))
+          renderAll(dataJSON);
+        } catch (err) {
+          console.error("Failed to load data.json", err);
+          alert("Failed to load portfolio data. Check console for details.");
+        }
+      });
+
+      function renderAll(data) {
+        renderCurrentPortfolio(data);
+        renderRecommendedPortfolio(data);
+        renderRecommendationsPage(data);
+        renderBuySellAndPlatforms(data);
+      }
+
+      /* ---------- Utilities ---------- */
+      function formatCurrency(num) {
+        if (num === null || num === undefined) return "-";
+        // if it's already string like "₹ 1.45L" just return
+        if (typeof num === "string" && num.indexOf("₹") !== -1) return num;
+        return "₹ " + Number(num).toLocaleString("en-IN");
+      }
+      function formatPercent(p) {
+        return p === null || p === undefined
+          ? "-"
+          : (Number(p).toFixed(1) + "%").replace(".0%", "%");
+      }
+      function safeText(t) {
+        return t == null ? "-" : t;
+      }
+
+      /* ---------- Page 1: Current Portfolio ---------- */
+      function renderCurrentPortfolio(data) {
+        const totalEl = document.getElementById("totalInvestment");
+        const assets = data.portfolio.assets;
+        const totalInvestmentNumber = data.portfolio.totalInvestment;
+        totalEl.textContent = formatCurrency(totalInvestmentNumber);
+
+        // asset-list (left)
+        const assetListEl = document.getElementById("assetList");
+        assetListEl.innerHTML = "";
+        const keys = Object.keys(assets);
+        keys.forEach((key, idx) => {
+          const a = assets[key];
+          const color = COLORS[idx % COLORS.length];
+          const item = document.createElement("div");
+          item.className = "asset-item";
+          item.innerHTML = `
+            <div class="asset-info">
+              <div class="asset-dot" style="background: ${color};"></div>
+              <span class="asset-name">${humanizeKey(key)}</span>
+            </div>
+            <div class="asset-value">
+              <span class="asset-amount">${formatCurrency(a.totalAmount)}</span>
+              <span class="asset-percent">[${a.percentage}%]</span>
+            </div>
+          `;
+          assetListEl.appendChild(item);
+        });
+
+        // Chart.js donut for current allocation
+        const labels = keys.map((k) => humanizeKey(k));
+        const values = keys.map((k) => Number(assets[k].percentage || 0));
+        const ctx = document.getElementById("currentChart").getContext("2d");
+
+        // destroy existing chart if any
+        if (currentChart) currentChart.destroy();
+        currentChart = new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels,
+            datasets: [
+              {
+                data: values,
+                backgroundColor: COLORS.slice(0, labels.length),
+                borderWidth: 0,
+              },
+            ],
+          },
+          options: {
+            cutout: "70%",
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: { label: (ctx) => `${ctx.label}: ${ctx.raw}%` },
+              },
+            },
+          },
+        });
+      }
+
+      /* ---------- Page 2: Recommended ---------- */
+      function renderRecommendedPortfolio(data) {
+        const recommendedTotalEl = document.getElementById("recommendedTotal");
+        recommendedTotalEl.textContent = formatCurrency(
+          data.portfolio.totalInvestment
+        );
+
+        // recommended asset list
+        const recommendedListEl = document.getElementById(
+          "recommendedAssetList"
+        );
+        recommendedListEl.innerHTML = "";
+        const ideal = data.advisorAnalysis.idealPortfolio;
+        const keys = Object.keys(ideal);
+        keys.forEach((k, idx) => {
+          const color = COLORS[idx % COLORS.length];
+          const item = document.createElement("div");
+          item.className = "asset-item";
+          item.innerHTML = `
+            <div class="asset-info">
+              <div class="asset-dot" style="background: ${color};"></div>
+              <span class="asset-name">${humanizeKey(k)}</span>
+            </div>
+            <div class="asset-value">
+              <span class="asset-amount">${formatPercent(ideal[k])}</span>
+              <span class="asset-percent">[${ideal[k]}%]</span>
+            </div>
+          `;
+          recommendedListEl.appendChild(item);
+        });
+
+        // Chart.js for recommended
+        const labels = keys.map((k) => humanizeKey(k));
+        const values = keys.map((k) => Number(ideal[k] || 0));
+        const ctx = document
+          .getElementById("recommendedChart")
+          .getContext("2d");
+
+        if (recommendedChart) recommendedChart.destroy();
+        recommendedChart = new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels,
+            datasets: [
+              {
+                data: values,
+                backgroundColor: COLORS.slice(0, labels.length),
+                borderWidth: 0,
+              },
+            ],
+          },
+          options: {
+            cutout: "70%",
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: { label: (ctx) => `${ctx.label}: ${ctx.raw}%` },
+              },
+            },
+          },
+        });
+      }
+
+      /* ---------- Page 3: Recommendations ---------- */
+      function renderRecommendationsPage(data) {
+        const container = document.getElementById("recommendationTable");
+        // remove existing table-row nodes (we'll append)
+        // keep header
+        container.querySelectorAll(".table-row").forEach((n) => n.remove());
+
+        const recs = data.advisorAnalysis.rebalancingRecommendations || [];
+        recs.forEach((r) => {
+          const row = document.createElement("div");
+          row.className = "table-row";
+          const sign = r.differencePercent >= 0 ? "Add" : "Remove";
+          const percentText =
+            r.differencePercent >= 0
+              ? r.differencePercent
+              : r.differencePercent;
+          row.innerHTML = `
+            <div class="asset-cell">${safeText(r.asset)}</div>
+            <div class="difference-cell">
+              <div class="diff-percent">${
+                r.differencePercent >= 0 ? "Add " : "Remove "
+              }${Math.abs(r.differencePercent)}%</div>
+              <div class="diff-amount">(${formatCurrency(
+                r.differenceAmount
+              )})</div>
+            </div>
+            <div class="recommendation-cell">
+              <a href="#" onclick="openAssetDetails('${escapeForJs(
+                r.asset
+              )}'); return false;">Click here</a>
+            </div>
+          `;
+          container.appendChild(row);
+        });
+
+        // ROI
+        const roiVal =
+          (data.advisorAnalysis.potentialROI &&
+            data.advisorAnalysis.potentialROI.estimatedReturn) ||
+          "-";
+        const roiValueEl = document.getElementById("roiValue");
+        roiValueEl.textContent = roiVal;
+        // disclaimer text
+        const disclaimerEl = document.getElementById("disclaimer");
+        if (
+          data.advisorAnalysis.potentialROI &&
+          data.advisorAnalysis.potentialROI.note
+        ) {
+          disclaimerEl.textContent = data.advisorAnalysis.potentialROI.note;
+        }
+      }
+
+      /* ---------- Page 4/5/6: Buy/Sell/Platforms ---------- */
+      function renderBuySellAndPlatforms(data) {
+        const list = data.buySellRecommendations || [];
+
+        // Build a simple funds table view for page4 (Buy) and page5 (Sell) and page6 platforms
+        const fundsTableBuy = document.getElementById("fundsTable");
+        const fundsTableSell = document.getElementById("fundsTableSell");
+        const platformTable = document.getElementById("platformTable");
+
+        // clear previous dynamic rows
+        [fundsTableBuy, fundsTableSell, platformTable].forEach((el) => {
+          if (!el) return;
+          Array.from(
+            el.querySelectorAll(".fund-row, .platform-row-dyn")
+          ).forEach((n) => n.remove());
+        });
+
+        // For page4 buy list: show all buy recommendations aggregated
+        list.forEach((group) => {
+          const assetName = group.asset;
+          // Buy rows
+          group.buy.forEach((b) => {
+            const row = document.createElement("div");
+            row.className = "funds-table-row fund-row";
+            // Expense Ratio / CAGR / Liquidity / Volatility are not present in JSON; show placeholders
+            row.innerHTML = `
+              <div>${
+                b.fundName
+              } <div style="font-size:11px;color:#666;">(${assetName})</div></div>
+              <div>${b.expenseRatio || "-"}</div>
+              <div>${b.cagr || "-"}</div>
+              <div>${b.liquidity || "High"}</div>
+              <div>${b.volatility || "Low"}</div>
+              <div><a href="#" class="explore-link" onclick="openPlatforms('${escapeForJs(
+                b.fundName
+              )}'); return false;">Click</a></div>
+            `;
+            fundsTableBuy.appendChild(row);
+
+            // platforms -> platform table
+            (b.platforms || []).forEach((p) => {
+              const prow = document.createElement("div");
+              prow.className = "platform-row platform-row-dyn";
+              prow.innerHTML = `
+                <div>${b.fundName}</div>
+                <div><a href="#" class="platform-link">${safeText(
+                  p.platformName
+                )}</a></div>
+                <div>${safeText(p.commission)}</div>
+                <div>${safeText(p.userRating)}</div>
+              `;
+              platformTable.appendChild(prow);
+            });
+          });
+
+          // Sell rows
+          group.sell.forEach((s) => {
+            const row = document.createElement("div");
+            row.className = "funds-table-row fund-row";
+            row.innerHTML = `
+              <div>${
+                s.fundName
+              } <div style="font-size:11px;color:#666;">(${assetName})</div></div>
+              <div>${s.expenseRatio || "-"}</div>
+              <div>${s.cagr || "-"}</div>
+              <div>${s.liquidity || "High"}</div>
+              <div>${s.volatility || "Low"}</div>
+              <div><a href="#" class="explore-link" onclick="openPlatforms('${escapeForJs(
+                s.fundName
+              )}'); return false;">Click</a></div>
+            `;
+            fundsTableSell.appendChild(row);
+
+            (s.platforms || []).forEach((p) => {
+              const prow = document.createElement("div");
+              prow.className = "platform-row platform-row-dyn";
+              prow.innerHTML = `
+                <div>${s.fundName}</div>
+                <div><a href="#" class="platform-link">${safeText(
+                  p.platformName
+                )}</a></div>
+                <div>${safeText(p.commission)}</div>
+                <div>${safeText(p.userRating)}</div>
+              `;
+              platformTable.appendChild(prow);
+            });
+          });
+        });
+
+        // store list on window for navigation to openAssetDetails
+        window.__buySell = list;
+      }
+
+      /* ---------- Navigation & small helpers ---------- */
+      function showPage(pageId) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document.getElementById(pageId).classList.add("active");
+      }
+      function goBack() {
+        alert("Back button clicked");
+      }
+
+      function changeView(value) {
+        if (value === "recommended") {
+          showPage("page2");
+        } else {
+          showPage("page1");
+        }
+      }
+
+      function switchBuySell(tab) {
+        document
+          .getElementById("buyTab")
+          .classList.toggle("active", tab === "buy");
+        document
+          .getElementById("sellTab")
+          .classList.toggle("active", tab === "sell");
+        // show relevant page content - for simplicity, stay on same page but highlight table changes handled above
+      }
+
+      // When user clicks "Click here" from recommendation row
+      function openAssetDetails(assetName) {
+        // find buy/sell group matching assetName and open page4 with that asset context
+        const list = window.__buySell || [];
+        const found = list.find(
+          (g) =>
+            g.asset.toLowerCase() === assetName.toLowerCase() ||
+            humanizeKey(g.asset).toLowerCase() === assetName.toLowerCase()
+        );
+        if (found) {
+          // set titles & load fund tables for that asset only (filter)
+          const titleBuy = document.getElementById("buyAssetTitle");
+          const titleSell = document.getElementById("sellAssetTitle");
+          titleBuy.textContent = found.asset;
+          titleSell.textContent = found.asset;
+
+          // rebuild fundsTable and fundsTableSell to show only this asset
+          const fundsTableBuy = document.getElementById("fundsTable");
+          const fundsTableSell = document.getElementById("fundsTableSell");
+          // remove old dynamic rows
+          Array.from(fundsTableBuy.querySelectorAll(".fund-row")).forEach((n) =>
+            n.remove()
+          );
+          Array.from(fundsTableSell.querySelectorAll(".fund-row")).forEach(
+            (n) => n.remove()
+          );
+
+          found.buy.forEach((b) => {
+            const row = document.createElement("div");
+            row.className = "funds-table-row fund-row";
+            row.innerHTML = `
+              <div>${b.fundName}</div>
+              <div>${b.expenseRatio || "-"}</div>
+              <div>${b.cagr || "-"}</div>
+              <div>${b.liquidity || "High"}</div>
+              <div>${b.volatility || "Low"}</div>
+              <div><a href="#" class="explore-link" onclick="openPlatforms('${escapeForJs(
+                b.fundName
+              )}'); return false;">Click</a></div>
+            `;
+            fundsTableBuy.appendChild(row);
+          });
+
+          found.sell.forEach((s) => {
+            const row = document.createElement("div");
+            row.className = "funds-table-row fund-row";
+            row.innerHTML = `
+              <div>${s.fundName}</div>
+              <div>${s.expenseRatio || "-"}</div>
+              <div>${s.cagr || "-"}</div>
+              <div>${s.liquidity || "High"}</div>
+              <div>${s.volatility || "Low"}</div>
+              <div><a href="#" class="explore-link" onclick="openPlatforms('${escapeForJs(
+                s.fundName
+              )}'); return false;">Click</a></div>
+            `;
+            fundsTableSell.appendChild(row);
+          });
+
+          showPage("page4");
+        } else {
+          // if not found, just show recommendations page
+          showPage("page3");
+        }
+      }
+
+      function openPlatforms(fundName) {
+        // find platforms for this fund in the buySellRecommendations and show on page6
+        const list = window.__buySell || [];
+        const platforms = [];
+        list.forEach((g) => {
+          (g.buy || []).forEach((b) => {
+            if (b.fundName === fundName)
+              (b.platforms || []).forEach((p) =>
+                platforms.push({ fund: b.fundName, ...p })
+              );
+          });
+          (g.sell || []).forEach((s) => {
+            if (s.fundName === fundName)
+              (s.platforms || []).forEach((p) =>
+                platforms.push({ fund: s.fundName, ...p })
+              );
+          });
+        });
+
+        // populate platform table on page6
+        const platformTable = document.getElementById("platformTable");
+        // remove old dynamic rows
+        Array.from(platformTable.querySelectorAll(".platform-row-dyn")).forEach(
+          (n) => n.remove()
+        );
+        platforms.forEach((p) => {
+          const prow = document.createElement("div");
+          prow.className = "platform-row platform-row-dyn";
+          prow.innerHTML = `
+            <div>${safeText(p.fund)}</div>
+            <div><a href="#" class="platform-link">${safeText(
+              p.platformName
+            )}</a></div>
+            <div>${safeText(p.commission)}</div>
+            <div>${safeText(p.userRating)}</div>
+          `;
+          platformTable.appendChild(prow);
+        });
+
+        showPage("page6");
+      }
+
+      /* helpers */
+      function humanizeKey(k) {
+        // convert camelCase or snake_case keys to normal text
+        return k
+          .replace(/([A-Z])/g, " $1")
+          .replace(/_/g, " ")
+          .replace(/^./, (s) => s.toUpperCase());
+      }
+      function escapeForJs(str) {
+        return (str || "").replace(/'/g, "\\'");
+      }
+
+      // Optional: download excel (simple CSV) from portfolio holdings
+      document
+        .getElementById("downloadExcelBtn")
+        .addEventListener("click", () => {
+          try {
+            const assets = dataJSON.portfolio.assets;
+            const rows = [
+              [
+                "Asset",
+                "Holding Name",
+                "Amount",
+                "Invest Date",
+                "Maturity Date",
+              ],
+            ];
+            Object.entries(assets).forEach(([asset, info]) => {
+              (info.holdings || []).forEach((h) => {
+                rows.push([
+                  humanizeKey(asset),
+                  h.name,
+                  h.amount,
+                  h.investDate || "-",
+                  h.maturityDate || "-",
+                ]);
+              });
+            });
+            const csv = rows
+              .map((r) =>
+                r.map((c) => `"${(c + "").replace(/"/g, '""')}"`).join(",")
+              )
+              .join("\n");
+            const blob = new Blob([csv], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "portfolio_holdings.csv";
+            a.click();
+            URL.revokeObjectURL(url);
+          } catch (e) {
+            console.error(e);
+            alert("Failed to generate CSV");
+          }
+        });
+    </script>
+  </body>
+</html>

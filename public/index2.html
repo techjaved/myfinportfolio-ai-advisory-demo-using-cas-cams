@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CAS & CAMS Investment Extractor — Full Portfolio Editor</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/modern-normalize/1.1.0/modern-normalize.min.css">
+  <style>
+    body {font-family: Inter, sans-serif; background:#0f1724; color:#e6eef6; margin:0; padding:24px;}
+    .app {max-width:1200px; margin:auto;}
+    header {margin-bottom:20px;}
+    h1 {font-size:22px; margin:0;}
+    p {color:#9aa4b2;}
+
+    .upload-box {background:#0b1220; border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:16px; margin-bottom:16px;}
+    .upload-box input, textarea {width:100%; margin-top:8px; padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:white;}
+    .btn {background:#2563eb; border:none; border-radius:8px; padding:8px 14px; color:white; cursor:pointer;}
+    .btn.ghost {background:transparent; border:1px solid rgba(255,255,255,0.2);}
+    .btn.danger {background:#ef4444;}
+    .btn.success {background:#10b981;}
+
+    .stepper {display:flex; flex-direction:column; gap:14px;}
+    .step {background:#0b1220; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:16px;}
+    .fields {display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px;}
+    label {font-size:13px; color:#9aa4b2;}
+    input, select {width:100%; background:transparent; border:1px solid rgba(255,255,255,0.1); border-radius:6px; color:white; padding:6px;}
+    .json-view {background:#031226; padding:12px; border-radius:8px; white-space:pre-wrap; max-height:300px; overflow:auto;}
+    .load-existing {margin-bottom:12px;}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>CAS & CAMS Investment Extractor — Full Portfolio Editor</h1>
+      <p>Upload CAS and CAMS reports (password-protected supported), extract all investments, view merged data, manage existing entries, or add custom columns.</p>
+    </header>
+
+    <div class="upload-box">
+      <h3>Upload Reports</h3>
+      <label>Upload CAS PDF</label>
+      <input id="casFile" type="file" accept="application/pdf">
+      <label>CAS Password (if required)</label>
+      <input id="casPassword" type="password" placeholder="Enter CAS PDF password">
+
+      <label>Upload CAMS PDF</label>
+      <input id="camsFile" type="file" accept="application/pdf">
+      <label>CAMS Password (if required)</label>
+      <input id="camsPassword" type="password" placeholder="Enter CAMS PDF password">
+
+      <button id="extractBtn" class="btn">Extract & Merge Data</button>
+    </div>
+
+    <div class="upload-box">
+      <h3>Portfolio Editor (Existing + Extracted + Missing Types)</h3>
+      <div class="load-existing">
+        <label>Load Existing JSON</label>
+        <input id="existingFile" type="file" accept="application/json">
+      </div>
+      <div style="margin-bottom:12px;">
+        <button id="addColumnBtn" class="btn ghost">Add New Column</button>
+      </div>
+      <div id="stepper" class="stepper"></div>
+      <button id="addBtn" class="btn ghost">Add New Investment</button>
+      <button id="downloadBtn" class="btn success">Download JSON</button>
+    </div>
+
+    <div class="upload-box">
+      <h3>Combined JSON Data</h3>
+      <div id="jsonView" class="json-view">[]</div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.9.179/pdf.min.js"></script>
+  <script>
+    const stepper=document.getElementById('stepper');
+    const jsonView=document.getElementById('jsonView');
+    let investments=[];
+    let customColumns=[];
+
+    const investmentTypes=['Stocks','Mutual Funds','ETFs','Digital Gold','Fixed Deposits','Real Estate','Corporate Bonds','Government Securities','Others'];
+    const defaultFields=['type','name','folio','isin','units','nav','amount','purchaseDate','maturityDate','rate','remarks'];
+
+    async function extractTextFromPDF(file,password){
+      if(!file) return '';
+      const arrayBuffer=await file.arrayBuffer();
+      const pdf=await pdfjsLib.getDocument({data:arrayBuffer,password:password||undefined}).promise;
+      let text='';
+      for(let i=1;i<=pdf.numPages;i++){
+        const page=await pdf.getPage(i);
+        const content=await page.getTextContent();
+        text+=content.items.map(i=>i.str).join(' ')+'\n';
+      }
+      console.log("text==>",text)
+      return text;
+    }
+
+    function parseInvestments(text){
+      const results=[];
+      const sections=text.split(/(?=Scheme Name|Folio No|ISIN|Investment Type)/gi);
+      for(const s of sections){
+        if(!s.trim()) continue;
+        const obj={};
+        defaultFields.forEach(k=>obj[k]='');
+        obj.type=investmentTypes.find(t=>new RegExp(t,'i').test(s))||'Others';
+        const mName=s.match(/Scheme Name[:\-]?\s*([A-Za-z0-9 &\-\(\)\.]+)/i);
+        if(mName)obj.name=mName[1];
+        const mAmt=s.match(/Amount[:\-]?\s*([0-9,\.]+)/i);
+        if(mAmt)obj.amount=mAmt[1].replace(/,/g,'');
+        results.push(obj);
+      }
+      return results;
+    }
+
+    function addEmptyPlaceholders(){
+      const missing=investmentTypes.filter(t=>!investments.some(i=>i.type===t));
+      for(const type of missing){
+        const obj={};
+        defaultFields.forEach(k=>obj[k]='');
+        obj.type=type;
+        investments.push(obj);
+      }
+    }
+
+    function render(){
+      stepper.innerHTML='';
+      investments.forEach((inv,idx)=>{
+        const div=document.createElement('div');
+        div.className='step';
+        const dynamicFields=[...defaultFields,...customColumns];
+        div.innerHTML=`
+          <div class="fields">
+            ${dynamicFields.map(f=>`
+              <div><label>${f}</label><input data-field="${f}" data-idx="${idx}" value="${inv[f]||''}"></div>
+            `).join('')}
+          </div>
+          <button class="btn danger" data-remove="${idx}">Remove</button>
+        `;
+        stepper.appendChild(div);
+      });
+
+      document.querySelectorAll('[data-field]').forEach(el=>{
+        el.addEventListener('input',e=>{
+          const idx=e.target.dataset.idx;
+          const field=e.target.dataset.field;
+          investments[idx][field]=e.target.value;
+          updateJSON();
+        });
+      });
+      document.querySelectorAll('[data-remove]').forEach(b=>b.addEventListener('click',e=>{
+        investments.splice(e.target.dataset.remove,1);
+        render();
+        updateJSON();
+      }));
+    }
+
+    function updateJSON(){jsonView.textContent=JSON.stringify(investments,null,2);}
+
+    document.getElementById('extractBtn').onclick=async()=>{
+      const casFile=document.getElementById('casFile').files[0];
+      const camsFile=document.getElementById('camsFile').files[0];
+      const casPass=document.getElementById('casPassword').value;
+      const camsPass=document.getElementById('camsPassword').value;
+
+      let combinedText='';
+      if(casFile) combinedText+=await extractTextFromPDF(casFile,casPass)+'\n';
+      if(camsFile) combinedText+=await extractTextFromPDF(camsFile,camsPass)+'\n';
+
+      if(!combinedText.trim() && investments.length===0) return alert('Upload at least one PDF file or load existing data');
+
+      const extracted=parseInvestments(combinedText);
+      investments=[...investments,...extracted];
+      addEmptyPlaceholders();
+      render();
+      updateJSON();
+    };
+
+    document.getElementById('existingFile').onchange=async(e)=>{
+      const file=e.target.files[0];
+      if(!file) return;
+      const text=await file.text();
+      try{
+        const existingData=JSON.parse(text);
+        if(Array.isArray(existingData)){
+          investments=[...existingData];
+          addEmptyPlaceholders();
+          render();
+          updateJSON();
+        } else alert('Invalid JSON file format');
+      }catch(err){alert('Error parsing JSON file');}
+    };
+
+    document.getElementById('addBtn').onclick=()=>{
+      const obj={};
+      [...defaultFields,...customColumns].forEach(k=>obj[k]='');
+      obj.type='Others';
+      investments.push(obj);
+      render();
+      updateJSON();
+    };
+
+    document.getElementById('addColumnBtn').onclick=()=>{
+      const col=prompt('Enter new column name:');
+      if(!col||defaultFields.includes(col)||customColumns.includes(col)) return;
+      customColumns.push(col);
+      investments.forEach(inv=>inv[col]='');
+      render();
+      updateJSON();
+    };
+
+    document.getElementById('downloadBtn').onclick=()=>{
+      const blob=new Blob([JSON.stringify(investments,null,2)],{type:'application/json'});
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download='combined_portfolio.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    };
+  </script>
+</body>
+</html>

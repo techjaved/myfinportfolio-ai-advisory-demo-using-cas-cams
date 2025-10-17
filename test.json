@@ -1,0 +1,76 @@
+{
+  "recommendations": {
+    "mutualFunds": {
+      "buy": [
+        {
+          "name": "ABC Funds",
+          "Expense Ratio": "0.1%",
+          "CAGR": {
+            "1_year": "10%",
+            "2_year": "20%",
+            "3_year": "50%"
+          },
+          "liquidity": "high",
+          "volatility": "high"
+        },
+        {
+          "name": "XYZ Funds",
+          "Expense Ratio": "0.1%",
+          "CAGR": {
+            "1_year": "10%",
+            "2_year": "20%",
+            "3_year": "50%"
+          },
+          "liquidity": "high",
+          "volatility": "high"
+        },
+        {
+          "name": "LMN Funds",
+          "Expense Ratio": "0.1%",
+          "CAGR": {
+            "1_year": "10%",
+            "2_year": "20%",
+            "3_year": "50%"
+          },
+          "liquidity": "high",
+          "volatility": "high"
+        }
+      ],
+      "sell": [
+        {
+          "name": "ABC Funds",
+          "Expense Ratio": "0.1%",
+          "CAGR": {
+            "1_year": "10%",
+            "2_year": "20%",
+            "3_year": "50%"
+          },
+          "liquidity": "high",
+          "volatility": "high"
+        },
+        {
+          "name": "XYZ Funds",
+          "Expense Ratio": "0.1%",
+          "CAGR": {
+            "1_year": "10%",
+            "2_year": "20%",
+            "3_year": "50%"
+          },
+          "liquidity": "high",
+          "volatility": "high"
+        },
+        {
+          "name": "LMN Funds",
+          "Expense Ratio": "0.1%",
+          "CAGR": {
+            "1_year": "10%",
+            "2_year": "20%",
+            "3_year": "50%"
+          },
+          "liquidity": "high",
+          "volatility": "high"
+        }
+      ]
+    }
+  }
+}

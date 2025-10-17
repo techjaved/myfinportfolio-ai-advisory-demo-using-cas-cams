@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Investment Portfolio Details</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #f2f4f7;
+        margin: 0;
+        padding: 16px;
+        color: #333;
+        min-height: 100vh;
+      }
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 14px;
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+      }
+      h3 {
+        text-align: center;
+        color: #1a237e;
+        margin-bottom: 25px;
+        font-size: 1.6rem;
+      }
+      .section {
+        margin-bottom: 20px;
+        padding: 20px;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        background: #fafafa;
+      }
+      .section label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: #37474f;
+      }
+      .single-input,
+      .list-items input,
+      .profile-fields input,
+      .profile-fields select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #cfd8dc;
+        border-radius: 6px;
+        font-size: 15px;
+        margin-bottom: 10px;
+      }
+      .profile-fields {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+      }
+      .profile-fields .field {
+        display: flex;
+        flex-direction: column;
+      }
+      .profile-fields .field label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        font-size: 14px;
+        color: #555;
+      }
+      .list-items {
+        list-style: none;
+        padding: 0;
+      }
+      .list-items li {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+      .list-items input {
+        flex: 1 1 180px;
+      }
+      .remove-btn {
+        background: #ef5350;
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        width: 28px;
+        height: 28px;
+        font-size: 16px;
+        line-height: 0;
+      }
+      .add-btn,
+      .submit-btn {
+        background: #1e88e5;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      .add-btn:hover,
+      .submit-btn:hover {
+        background: #1565c0;
+      }
+      .submit-btn {
+        width: 100%;
+        background: #43a047;
+        font-size: 15px;
+        margin-top: 20px;
+      }
+      .submit-btn:hover {
+        background: #2e7d32;
+      }
+      .error-message {
+        color: #e53935;
+        font-size: 13px;
+        margin-top: 4px;
+        display: none;
+      }
+      .error-message.show {
+        display: block;
+      }
+      .invalid {
+        border-color: #e53935;
+      }
+      .spinner {
+        width: 30px;
+        height: 30px;
+        border: 3px solid #fff;
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (max-width: 600px) {
+        body {
+          padding: 8px;
+        }
+        .container {
+          padding: 18px;
+          border-radius: 10px;
+        }
+        h3 {
+          font-size: 1.3rem;
+        }
+        .list-items input {
+          flex: 1 1 100%;
+        }
+        .add-btn,
+        .submit-btn {
+          width: 100%;
+          margin-top: 10px;
+        }
+        .profile-fields {
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h3>Let’s understand your profile Better</h3>
+      <form id="portfolioForm">
+        <!-- Profile Section -->
+        <div class="section">
+          <label>Profile Details</label>
+          <div class="profile-fields">
+            <div class="field">
+              <label>Date of Birth</label>
+              <input type="date" name="dob" id="dob" />
+            </div>
+            <div class="field">
+              <label>Gender</label>
+              <select name="gender" id="gender">
+                <option value="">Choose your gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Number of Dependents</label>
+              <input type="number" name="noOfDependents" min="0" />
+            </div>
+            <div class="field">
+              <label>Occupation</label>
+              <input type="text" name="occupation" />
+            </div>
+            <div class="field">
+              <label>Annual Income</label>
+              <input type="number" name="annualIncome" min="0" step="0.01" />
+            </div>
+            <div class="field">
+              <label>Tax Bracket</label>
+              <select name="taxBracket" id="taxBracket">
+                <option value="">Select tax bracket</option>
+                <option value="0-5000">Below 5000</option>
+                <option value="5000-10000">5000 to 10000</option>
+                <option value="10000-50000">10000 to 50000</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Exact Annual Investment Corpus</label>
+              <input
+                type="number"
+                name="exactAnnualInvestmentIncomeCorpus"
+                min="0"
+                step="0.01"
+              />
+            </div>
+            <div class="field">
+              <label>PAN Number</label>
+              <input type="text" name="pan" id="pan" />
+            </div>
+          </div>
+        </div>
+
+        <!-- File Uploads -->
+        <div class="section">
+          <label>Upload Your Investment Reports</label>
+          <p style="font-size: 13px; color: #555">
+            Upload CAS and CAMS reports (PDF). If password protected, PAN will
+            be used automatically.
+          </p>
+          <input type="file" id="casFile" accept=".pdf" />
+          <input type="file" id="camsFile" accept=".pdf" />
+        </div>
+
+        <!-- Stocks -->
+        <div class="section">
+          <label>Stocks</label>
+          <input
+            type="number"
+            name="stocksAmount"
+            class="single-input"
+            placeholder="Enter total amount"
+            min="0"
+            step="0.01"
+          />
+        </div>
+
+        <!-- Mutual Funds -->
+        <div class="section">
+          <label>Mutual Funds</label>
+          <ul class="list-items" id="mutualFundsList"></ul>
+          <button
+            type="button"
+            class="add-btn"
+            onclick="addRow('mutualFundsList', ['text','number','date','date'])"
+          >
+            Add More Funds
+          </button>
+        </div>
+
+        <!-- ETFs -->
+        <div class="section">
+          <label>ETFs</label>
+          <ul class="list-items" id="etfsList"></ul>
+          <button
+            type="button"
+            class="add-btn"
+            onclick="addRow('etfsList', ['text','number','date','date'])"
+          >
+            Add More ETFs
+          </button>
+        </div>
+
+        <!-- Digital Gold -->
+        <div class="section">
+          <label>Digital Gold</label>
+          <input
+            type="number"
+            name="digitalGoldAmount"
+            class="single-input"
+            placeholder="Enter total amount"
+            min="0"
+            step="0.01"
+          />
+        </div>
+
+        <!-- Fixed Deposits -->
+        <div class="section">
+          <label>Fixed Deposits</label>
+          <ul class="list-items" id="fixedDepositsList"></ul>
+          <button
+            type="button"
+            class="add-btn"
+            onclick="addRow('fixedDepositsList', ['text','number','date','date'])"
+          >
+            Add More FDs
+          </button>
+        </div>
+
+        <!-- Real Estate -->
+        <div class="section">
+          <label>Real Estate</label>
+          <input
+            type="number"
+            name="realEstateAmount"
+            class="single-input"
+            placeholder="Enter total amount"
+            min="0"
+            step="0.01"
+          />
+        </div>
+
+        <!-- Corporate Bonds -->
+        <div class="section">
+          <label>Corporate Bonds</label>
+          <ul class="list-items" id="corporateBondsList"></ul>
+          <button
+            type="button"
+            class="add-btn"
+            onclick="addRow('corporateBondsList', ['text','number','date','date'])"
+          >
+            Add More Bonds
+          </button>
+        </div>
+
+        <!-- Government Securities -->
+        <div class="section">
+          <label>Government Securities</label>
+          <ul class="list-items" id="governmentSecuritiesList"></ul>
+          <button
+            type="button"
+            class="add-btn"
+            onclick="addRow('governmentSecuritiesList', ['text','number','date','date'])"
+          >
+            Add More Securities
+          </button>
+        </div>
+
+        <!-- Others -->
+        <div class="section">
+          <label>Others</label>
+          <input
+            type="number"
+            name="othersAmount"
+            class="single-input"
+            placeholder="Enter total amount"
+            min="0"
+            step="0.01"
+          />
+        </div>
+
+        <button type="submit" id="submit_btn" class="submit-btn">
+          Submit Portfolio
+        </button>
+      </form>
+    
+      <div id="ai-output"></div>
+    </div>
+
+    <script>
+      function removeRow(btn) {
+        const li = btn.closest("li");
+        if (li && confirm("Remove this entry?")) li.remove();
+      }
+
+      function addRow(listId, inputTypes, values = []) {
+        const ul = document.getElementById(listId);
+        const li = document.createElement("li");
+        inputTypes.forEach((type, idx) => {
+          const input = document.createElement("input");
+          input.type = type;
+          input.placeholder =
+            type === "text" ? "Name" : type === "number" ? "Amount" : "Date";
+          input.value = values[idx] || "";
+          li.appendChild(input);
+        });
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "remove-btn";
+        remove.textContent = "×";
+        remove.onclick = () => removeRow(remove);
+        li.appendChild(remove);
+        ul.appendChild(li);
+      }
+
+      // Mock extraction API
+      async function extractFromPDF(file, pan) {
+        console.log("Extracting:", file.name, "with PAN", pan);
+        await new Promise((r) => setTimeout(r, 1000)); // simulate delay
+        return {
+          mutualFunds: [
+            {
+              name: "Axis Bluechip Fund",
+              amount: 5000,
+              investDate: "2023-01-10",
+              maturityDate: "2026-01-10",
+            },
+            {
+              name: "HDFC Flexi Cap",
+              amount: 3000,
+              investDate: "2024-04-01",
+              maturityDate: "",
+            },
+          ],
+          etfs: [
+            {
+              name: "Nippon Gold ETF",
+              amount: 2000,
+              investDate: "2024-01-10",
+              maturityDate: "",
+            },
+          ],
+          stocks: 12000,
+          digitalGold: 2500,
+        };
+      }
+
+      async function handleExtraction() {
+        const pan = document.getElementById("pan").value.trim();
+        if (!pan) {
+          alert(
+            "Please enter PAN first — it's required for password-protected PDFs."
+          );
+          return;
+        }
+        const cas = document.getElementById("casFile").files[0];
+        const cams = document.getElementById("camsFile").files[0];
+        if (!cas && !cams) return alert("Upload at least one PDF file.");
+
+        const extracted = [];
+        if (cas) extracted.push(await extractFromPDF(cas, pan));
+        if (cams) extracted.push(await extractFromPDF(cams, pan));
+
+        const merged = extracted.reduce((acc, cur) => {
+          for (const key in cur) {
+            if (Array.isArray(cur[key]))
+              acc[key] = [...(acc[key] || []), ...cur[key]];
+            else acc[key] = (acc[key] || 0) + (cur[key] || 0);
+          }
+          return acc;
+        }, {});
+
+        fillExtractedData(merged);
+        alert("Extraction complete! Data pre-filled for review.");
+      }
+
+      function fillExtractedData(data) {
+        const map = {
+          mutualFundsList: data.mutualFunds,
+          etfsList: data.etfs,
+          fixedDepositsList: data.fixedDeposits,
+          corporateBondsList: data.corporateBonds,
+          governmentSecuritiesList: data.governmentSecurities,
+        };
+        Object.entries(map).forEach(([listId, arr]) => {
+          const ul = document.getElementById(listId);
+          ul.innerHTML = "";
+          if (arr)
+            arr.forEach((i) =>
+              addRow(
+                listId,
+                ["text", "number", "date", "date"],
+                [
+                  i.name || "",
+                  i.amount || "",
+                  i.investDate || "",
+                  i.maturityDate || "",
+                ]
+              )
+            );
+        });
+
+        if (data.stocks)
+          document.querySelector('[name="stocksAmount"]').value = data.stocks;
+        if (data.digitalGold)
+          document.querySelector('[name="digitalGoldAmount"]').value =
+            data.digitalGold;
+      }
+
+      document
+        .getElementById("casFile")
+        .addEventListener("change", handleExtraction);
+      document
+        .getElementById("camsFile")
+        .addEventListener("change", handleExtraction);
+
+      function formToJSON(form) {
+        const data = {
+          profileDetails: {
+            dob: form.dob.value || null,
+            gender: form.gender.value || null,
+            noOfDependents: form.noOfDependents.value || null,
+            occupation: form.occupation.value || null,
+            annualIncome: form.annualIncome.value || null,
+            taxBracket: form.taxBracket.value || null,
+            exactAnnualInvestmentIncomeCorpus:
+              form.exactAnnualInvestmentIncomeCorpus.value || null,
+            pan: form.pan.value || null,
+          },
+          stocks: { totalAmount: form.stocksAmount.value || 0 },
+          digitalGold: { totalAmount: form.digitalGoldAmount.value || 0 },
+          realEstate: { totalAmount: form.realEstateAmount.value || 0 },
+          others: { totalAmount: form.othersAmount.value || 0 },
+        };
+
+        const sections = {
+          mutualFundsList: ["name", "amount", "investDate", "maturityDate"],
+          etfsList: ["name", "amount", "investDate", "maturityDate"],
+          fixedDepositsList: ["name", "amount", "investDate", "maturityDate"],
+          corporateBondsList: ["name", "amount", "investDate", "maturityDate"],
+          governmentSecuritiesList: [
+            "name",
+            "amount",
+            "investDate",
+            "maturityDate",
+          ],
+        };
+
+        for (const [listId, fields] of Object.entries(sections)) {
+          const entries = [];
+          document.querySelectorAll(`#${listId} li`).forEach((li) => {
+            const inputs = li.querySelectorAll("input");
+            const entry = {};
+            inputs.forEach((inp, i) => (entry[fields[i]] = inp.value || null));
+            entries.push(entry);
+          });
+          data[listId.replace("List", "")] = entries;
+        }
+
+        return data;
+      }
+
+      document
+        .getElementById("portfolioForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          showLoading();
+          const json = formToJSON(e.target);
+          // console.log("Final JSON Output:", json);
+          // const blob = new Blob([JSON.stringify(json, null, 2)], {
+          //   type: "application/json",
+          // });
+          // const url = URL.createObjectURL(blob);
+          // const a = document.createElement("a");
+          // a.href = url;
+          // a.download = "portfolioData.json";
+          // a.click();
+          // URL.revokeObjectURL(url);
+
+          const aiResponse = await callAIAdvisor(json);
+
+          // Optionally show it on the page
+          if (aiResponse) {
+            localStorage.setItem("advisorResponse", JSON.stringify(aiResponse));
+            window.location.href = "advisor3.html";
+            // document.getElementById("ai-output").textContent = JSON.stringify(
+            //   aiResponse,
+            //   null,
+            //   2
+            // );
+          }
+          hideLoading();
+          alert("JSON generated!");
+        });
+
+      // Show loading overlay
+      function showLoading() {
+        document.getElementById("submit_btn").disabled = true;
+        const loadingDiv = document.createElement("div");
+        loadingDiv.id = "loading";
+        loadingDiv.innerHTML = `
+    <div style="
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      color: white;
+      font-size: 1.5rem;
+      font-weight: bold;
+      backdrop-filter: blur(3px);
+    ">
+      <div class="spinner"></div>
+      <span style="margin-left: 10px;">Loading...</span>
+    </div>
+  `;
+        document.body.appendChild(loadingDiv);
+      }
+
+      // Hide loading overlay
+      function hideLoading() {
+        document.getElementById("submit_btn").disabled = false;
+        const loadingDiv = document.getElementById("loading");
+        if (loadingDiv) loadingDiv.remove();
+      }
+
+      async function callAIAdvisor(portfolioData) {
+        try {
+          const response = await fetch("http://localhost:5005/api/advisor", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(portfolioData),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Server error: ${response.status} - ${errorText}`);
+          }
+
+          const data = await response.json();
+
+          console.log("✅ AI Advisor Response:", data);
+
+          // You can display results on the page like this:
+          document.getElementById("ai-output").textContent = JSON.stringify(
+            data,
+            null,
+            2
+          );
+
+          return data;
+        } catch (error) {
+          console.error("❌ AI Advisor API Error:", error);
+          document.getElementById("ai-output").textContent =
+            "Error: " + error.message;
+        }
+      }
+    </script>
+  </body>
+</html>
