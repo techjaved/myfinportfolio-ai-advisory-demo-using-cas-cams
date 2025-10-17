@@ -6,8 +6,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 dotenv.config()
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 const app = express()
 
 const port = process.env.PORT || 5005;
@@ -18,7 +18,7 @@ const port = process.env.PORT || 5005;
 //   }))
 app.use(cors());
 app.use(express.json())
-app.use(express.static(path.join(__dirname, "public")));
+// app.use(express.static(path.join(__dirname, "public")));
 
 // Initialize OpenAI
 const openai = new OpenAI({
@@ -425,12 +425,12 @@ app.post("/api/advisor", async (req, res) => {
     }
 });
 
-app.use(express.static(path.join(__dirname, "public")));
+// app.use(express.static(path.join(__dirname, "public")));
 
 // --------------------------
-app.use((req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
+// app.use((req, res) => {
+//   res.sendFile(path.join(__dirname, "public", "index.html"));
+// });
 
 // ---------------------
 // Start Server
