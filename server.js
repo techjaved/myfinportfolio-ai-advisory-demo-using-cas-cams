@@ -6,20 +6,43 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 dotenv.config()
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const app = express()
 
 const port = process.env.PORT || 5005;
+// ✅ Allowed origins list
+const allowedOrigins = [
+  "http://localhost:5005",
+  "http://localhost:3000",
+  "https://myfinportfolio-ai-advisory.vercel.app",
+];
 // app.use( cors({
 //     origin: "http://localhost:5005", // or your actual frontend port
 //     methods: ["GET", "POST"],
 //     allowedHeaders: ["Content-Type"],
 //   }))
-app.use(cors());
+// ✅ Dynamic CORS setup
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true, // if you use cookies or auth headers
+  })
+);
+// app.use(cors());
 app.use(express.json())
-app.use(express.static("public"));
-// app.use(express.static(path.join(__dirname, "public")));
+// app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "public")));
 
 // Initialize OpenAI
 const openai = new OpenAI({
@@ -426,12 +449,12 @@ app.post("/api/advisor", async (req, res) => {
     }
 });
 
-// app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "public")));
 
 // --------------------------
-// app.use((req, res) => {
-//   res.sendFile(path.join(__dirname, "public", "index.html"));
-// });
+app.use((req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 
 // ---------------------
 // Start Server
